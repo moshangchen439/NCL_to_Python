@@ -205,17 +205,3 @@ def dim_standardize_n(data, dim=0):
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return (inputdata - np.nanmean(inputdata, dim, keepdims=True)) / np.nanstd(inputdata, dim, keepdims=True)
-
-
-if __name__ == '__main__':
-    a = [1, 2, 3]
-    f1 = xr.open_dataset('hgt.2015.nc')
-    hgt = f1.hgt
-    f2 = xr.open_dataset('uwnd.2015.nc')
-    u = f2.uwnd
-    # b = dim_avg_n(a, 1)
-    d = xr.DataArray(a)
-    # c = dim_avg_n_Wrap(d)
-    # e = percentile(data, 50)
-    da = dim_standardize_n(hgt, 1)
-    print(da[10, 1, 4, 3])
