@@ -19,14 +19,14 @@ from scipy.stats import linregress
 
 
 def dim_avg_n(data, dim=0):
-    '''均值, 元数据丢失'''
+    '''求均值, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanmean(inputdata, axis=dim)
 
 
 def dim_avg_n_Wrap(data, dim=0, keepdims=False):
-    '''均值, 保留元数据'''
+    '''求均值, 保留元数据'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.mean(dim=data.dims[dim], skipna=True)
@@ -35,7 +35,7 @@ def dim_avg_n_Wrap(data, dim=0, keepdims=False):
 
 
 def percentile(data, q, dim=0, interpolation='linear'):
-    '''分位数'''
+    '''求分位数'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.quantile(q/100, dim=data.dims[dim], method=interpolation, skipna=True)
@@ -45,7 +45,7 @@ def percentile(data, q, dim=0, interpolation='linear'):
 
 
 def clmMon(data):
-    '''气候态: 月平均'''
+    '''求气候态: 月平均'''
     if isinstance(data, xr.DataArray):
         return data.groupby('time.month').mean(dim='time')
     else:
@@ -53,7 +53,7 @@ def clmMon(data):
 
 
 def clmDay(data):
-    '''气候态: 日平均'''
+    '''求气候态: 日平均'''
     if isinstance(data, xr.DataArray):
         return data.groupby(data.time.dt.strftime('%m-%d')).mean(dim='time')
     else:
@@ -61,7 +61,7 @@ def clmDay(data):
 
 
 def calcDayAnom(data):
-    '''距平: 去季节(日数据)'''
+    '''求距平: 去季节(日数据)'''
     if isinstance(data, xr.DataArray):
         return data.groupby(data.time.dt.strftime('%m-%d')) - clmDay(data)
     else:
@@ -69,7 +69,7 @@ def calcDayAnom(data):
 
 
 def calcMonAnom(data):
-    '''距平: 去季节(月数据)'''
+    '''求距平: 去季节(月数据)'''
     if isinstance(data, xr.DataArray):
         return data.groupby('time.month') - clmMon(data)
     else:
@@ -77,14 +77,14 @@ def calcMonAnom(data):
 
 
 def dim_stddev_n(data, dim=0):
-    '''标准差, 元数据丢失'''
+    '''求标准差, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanstd(inputdata, axis=dim)
 
 
 def dim_stddev_n_Wrap(data, dim=0):
-    '''标准差, 元数据保留'''
+    '''求标准差, 元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.std(dim=data.dims[dim], skipna=True)
@@ -93,14 +93,14 @@ def dim_stddev_n_Wrap(data, dim=0):
 
 
 def dim_variance_n(data, dim=0):
-    '''无偏样本方差, 元数据丢失'''
+    '''求无偏样本方差, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanvar(inputdata, axis=dim, ddof=1)
 
 
 def dim_variance_n_Wrap(data, dim=0):
-    '''无偏样本方差， 元数据保留'''
+    '''求无偏样本方差，元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.var(dim=data.dims[dim], skipna=True, ddof=1)
@@ -187,7 +187,7 @@ def linreg(data1, data2):
 
 
 def dim_standardize_n_Wrap(data, dim=0):
-    '''标准化, 元数据保留'''
+    '''数据标准化, 元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return xr.apply_ufunc(
@@ -201,7 +201,7 @@ def dim_standardize_n_Wrap(data, dim=0):
 
 
 def dim_standardize_n(data, dim=0):
-    '''标准化， 元数据丢失'''
+    '''数据标准化，元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return (inputdata - np.nanmean(inputdata, dim, keepdims=True)) / np.nanstd(inputdata, dim, keepdims=True)
