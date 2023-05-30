@@ -1,10 +1,10 @@
 # NCL_to_Python
 
-一些基础NCL函数的Python简单实现
+- [x] 一些基础NCL函数的Python简单实现
 
-PS: 未完整测试，谨慎使用
+PS: 未完整测试，谨慎使用 :zap:
 
-使用方法：
+:deciduous_tree:使用方法：
 
 ~~~python
 import sys
