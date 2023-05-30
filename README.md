@@ -1,3 +1,3 @@
 ### NCL_to_Python
 
-NCL 函数的Python实现
+一些基础的NCL函数的Python实现
