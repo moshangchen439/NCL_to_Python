@@ -19,14 +19,14 @@ from scipy.stats import linregress
 
 
 def dim_avg_n(data, dim=0):
-    '''求均值, 元数据丢失'''
+    '''均值, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanmean(inputdata, axis=dim)
 
 
 def dim_avg_n_Wrap(data, dim=0, keepdims=False):
-    '''求均值, 保留元数据'''
+    '''均值, 保留元数据'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.mean(dim=data.dims[dim], skipna=True)
@@ -35,7 +35,7 @@ def dim_avg_n_Wrap(data, dim=0, keepdims=False):
 
 
 def percentile(data, q, dim=0, interpolation='linear'):
-    '''求分位数'''
+    '''分位数'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.quantile(q/100, dim=data.dims[dim], method=interpolation, skipna=True)
@@ -45,7 +45,7 @@ def percentile(data, q, dim=0, interpolation='linear'):
 
 
 def clmMon(data):
-    '''求气候态: 月平均'''
+    '''气候态: 月平均'''
     if isinstance(data, xr.DataArray):
         return data.groupby('time.month').mean(dim='time')
     else:
@@ -53,7 +53,7 @@ def clmMon(data):
 
 
 def clmDay(data):
-    '''求气候态: 日平均'''
+    '''气候态: 日平均'''
     if isinstance(data, xr.DataArray):
         return data.groupby(data.time.dt.strftime('%m-%d')).mean(dim='time')
     else:
@@ -61,7 +61,7 @@ def clmDay(data):
 
 
 def calcDayAnom(data):
-    '''求距平: 去季节(日数据)'''
+    '''距平: 去季节(日数据)'''
     if isinstance(data, xr.DataArray):
         return data.groupby(data.time.dt.strftime('%m-%d')) - clmDay(data)
     else:
@@ -69,7 +69,7 @@ def calcDayAnom(data):
 
 
 def calcMonAnom(data):
-    '''求距平: 去季节(月数据)'''
+    '''距平: 去季节(月数据)'''
     if isinstance(data, xr.DataArray):
         return data.groupby('time.month') - clmMon(data)
     else:
@@ -77,14 +77,14 @@ def calcMonAnom(data):
 
 
 def dim_stddev_n(data, dim=0):
-    '''求标准差, 元数据丢失'''
+    '''标准差, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanstd(inputdata, axis=dim)
 
 
 def dim_stddev_n_Wrap(data, dim=0):
-    '''求标准差, 元数据保留'''
+    '''标准差, 元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.std(dim=data.dims[dim], skipna=True)
@@ -93,14 +93,14 @@ def dim_stddev_n_Wrap(data, dim=0):
 
 
 def dim_variance_n(data, dim=0):
-    '''求无偏样本方差, 元数据丢失'''
+    '''无偏样本方差, 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return np.nanvar(inputdata, axis=dim, ddof=1)
 
 
 def dim_variance_n_Wrap(data, dim=0):
-    '''求无偏样本方差，元数据保留'''
+    '''无偏样本方差， 元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return data.var(dim=data.dims[dim], skipna=True, ddof=1)
@@ -187,7 +187,7 @@ def linreg(data1, data2):
 
 
 def dim_standardize_n_Wrap(data, dim=0):
-    '''数据标准化, 元数据保留'''
+    '''标准化, 元数据保留'''
     assert isinstance(dim, int)
     if isinstance(data, xr.DataArray):
         return xr.apply_ufunc(
@@ -201,7 +201,40 @@ def dim_standardize_n_Wrap(data, dim=0):
 
 
 def dim_standardize_n(data, dim=0):
-    '''数据标准化，元数据丢失'''
+    '''标准化， 元数据丢失'''
     assert isinstance(dim, int)
     inputdata = np.array(data)
     return (inputdata - np.nanmean(inputdata, dim, keepdims=True)) / np.nanstd(inputdata, dim, keepdims=True)
+
+
+def runave_n_Wrap(data, nave, dim=0):
+    '''滑动平均, 元数据保留'''
+    assert isinstance(dim, int)
+    assert isinstance(nave, int)
+    if isinstance(data, xr.DataArray):
+        dims = data.dims
+        return data.rolling({dims[dim]: nave}, center=True).mean()
+    else:
+        raise ValueError('Not a DataArray')
+
+
+def runave_n(data, nave, dim=0):
+    '''滑动平均, 元数据丢失'''
+    assert isinstance(dim, int)
+    assert isinstance(nave, int)
+    inputdata = np.array(data)
+    ndim = inputdata.ndim
+    if ndim == 1:
+        return np.convolve(inputdata, np.repeat(1/nave, nave), mode='valid')
+    else:
+        datatemp1 = np.swapaxes(inputdata, 0, dim)
+        datatemp2 = np.reshape(datatemp1, (datatemp1.shape[0], -1))
+        runtemp = np.full(datatemp2.shape, np.nan)
+        for i in np.arange(0, datatemp2.shape[1]):
+            if nave % 2 == 0:
+                runtemp[nave//2:datatemp2.shape[0] - (nave-1)//2, i] = np.convolve(datatemp2[:, i], np.repeat(1/nave, nave), mode='valid')
+            else:
+                runtemp[nave//2:datatemp2.shape[0] - nave//2, i] = np.convolve(datatemp2[:, i], np.repeat(1/nave, nave), mode='valid')
+        datatemp3 = np.reshape(runtemp, datatemp1.shape)
+        datatemp4 = np.swapaxes(datatemp3, 0, dim)
+        return datatemp4
