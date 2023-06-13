@@ -6,7 +6,7 @@
 # This software may be used, copied, or redistributed as long as it is not
 # sold and this notice is reproduced on each copy made. This
 # routine is provided as is without any express or implied warranties
-# whatsoever.
+# whatever.
 # ------------------------------------------------------------------------------
 # CAUTION: side effects of reading or using this poorly coded,
 # uncommented program may include nausea, hives, and uncontrolled
@@ -16,6 +16,7 @@ import numpy as np
 import xarray as xr
 from scipy.stats import pearsonr
 from scipy.stats import linregress
+from scipy.signal import detrend
 
 
 def dim_avg_n(data, dim=0):
@@ -238,3 +239,15 @@ def runave_n(data, nave, dim=0):
         datatemp3 = np.reshape(runtemp, datatemp1.shape)
         datatemp4 = np.swapaxes(datatemp3, 0, dim)
         return datatemp4
+
+
+def dtrend(data, dim=0):
+    '''去线性趋势'''
+    assert isinstance(dim, int)
+    inputdata = np.array(data)
+    temp = detrend(inputdata, axis=dim, type='linear')
+    if isinstance(data, xr.DataArray):
+        data_detrend = copy_VarCoords(temp, data)
+        return data_detrend
+    else:
+        return temp
